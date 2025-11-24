@@ -1,0 +1,130 @@
+Table organizations {
+  id int [pk]
+  name varchar [unique]
+  slug varchar [unique]
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+}
+
+Table projects {
+  id int [pk]
+  organization_id int [ref: > organizations.id]
+  name varchar
+  slug varchar
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+
+  indexes {
+    (organization_id, slug) [unique]
+  }
+}
+
+Table users {
+  id uuid [pk]
+  email varchar [unique]
+  name varchar
+  password_hash varchar
+  is_active boolean
+  created_at datetime
+  updated_at datetime
+}
+
+Table memberships {
+  id int [pk]
+  user_id uuid [ref: > users.id]
+  organization_id int [ref: > organizations.id]
+  project_id int [ref: > projects.id]
+  role varchar
+  created_at datetime
+
+  indexes {
+    (user_id, organization_id, project_id) [unique]
+  }
+}
+
+Table schemas {
+  id int [pk]
+  project_id int [ref: > projects.id]
+  name varchar
+  description text
+  current_version int [ref: > schema_versions.version_id]
+  created_by uuid [ref: > users.id]
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime
+
+  indexes {
+    (project_id, name) [unique]
+  }
+}
+
+Table storage_objects {
+  id uuid [pk]
+  bucket varchar
+  object_key varchar
+  size bigint
+  checksum varchar
+  storage_class varchar
+  meta json
+  created_at datetime
+
+  indexes {
+    (bucket, object_key) [unique]
+  }
+}
+
+Table schema_versions {
+  version_id int [pk]
+  schema_id int [ref: > schemas.id]
+  version_number int
+  status varchar
+  object_id uuid [ref: > storage_objects.id]
+  diff json
+  notes text
+  created_by uuid [ref: > users.id]
+  created_at datetime
+  released_at datetime
+  deleted_at datetime
+
+  indexes {
+    (schema_id, version_number) [unique]
+    (schema_id, status)
+  }
+}
+
+Table notifications {
+  id int [pk]
+  organization_id int [ref: > organizations.id]
+  project_id int [ref: > projects.id]
+  schema_id int [ref: > schemas.id]
+  version_id int [ref: > schema_versions.version_id]
+  event_type varchar
+  payload json
+  sent_at datetime
+  delivered boolean
+}
+
+Table webhooks {
+  id int [pk]
+  organization_id int [ref: > organizations.id]
+  project_id int [ref: > projects.id]
+  url varchar
+  secret varchar
+  event_types varchar
+  is_active boolean
+  created_at datetime
+}
+
+Table audit_logs {
+  id int [pk]
+  actor_id uuid [ref: > users.id]
+  organization_id int [ref: > organizations.id]
+  project_id int [ref: > projects.id]
+  target_table varchar
+  target_id varchar
+  action varchar
+  diff json
+  created_at datetime
+}

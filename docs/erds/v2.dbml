@@ -1,0 +1,41 @@
+Table users {
+  id int [pk]
+  name varchar
+  email varchar
+  role varchar
+  created_at datetime
+}
+
+Table schemas {
+  id int [pk]
+  name varchar [unique]
+  current_version int [ref: > schema_versions.version_id]
+  uploaded_by int [ref: > users.id]
+  created_at datetime
+  updated_at datetime
+}
+
+Table schema_versions {
+  version_id int [pk]
+  schema_id int [ref: > schemas.id]
+  version_number int
+  status varchar
+  object_key varchar
+  diff_summary text
+  created_by int [ref: > users.id]
+  created_at datetime
+
+  indexes {
+    (schema_id, version_number) [unique]
+    schema_id
+  }
+}
+
+Table notifications {
+  id int [pk]
+  schema_id int [ref: > schemas.id]
+  version_id int [ref: > schema_versions.version_id]
+  event_type varchar
+  payload json
+  sent_at datetime
+}

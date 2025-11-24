@@ -1,0 +1,38 @@
+erDiagram
+
+    USERS {
+        int id PK
+        varchar name
+        varchar email
+        varchar role
+        datetime created_at
+    }
+
+    SCHEMAS {
+        int id PK
+        varchar name
+        int current_version FK
+        int uploaded_by FK
+        datetime created_at
+    }
+
+    SCHEMA_VERSIONS {
+        int version_id PK
+        int schema_id FK
+        int version_number
+        varchar file_path
+        text diff_summary
+        datetime created_at
+    }
+
+    NOTIFICATIONS {
+        int id PK
+        int schema_id FK
+        varchar event_type
+        json payload
+        datetime sent_at
+    }
+
+    USERS ||--o{ SCHEMAS : "uploaded_by"
+    SCHEMAS ||--o{ SCHEMA_VERSIONS : "versions"
+    SCHEMAS ||--o{ NOTIFICATIONS : "notifications"

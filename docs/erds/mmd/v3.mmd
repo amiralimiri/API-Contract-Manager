@@ -1,0 +1,132 @@
+erDiagram
+
+    ORGANIZATIONS {
+        int id PK
+        varchar name
+        varchar slug
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
+    }
+
+    PROJECTS {
+        int id PK
+        int organization_id FK
+        varchar name
+        varchar slug
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
+    }
+
+    USERS {
+        uuid id PK
+        varchar email
+        varchar name
+        varchar password_hash
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    MEMBERSHIPS {
+        int id PK
+        uuid user_id FK
+        int organization_id FK
+        int project_id FK
+        varchar role
+        datetime created_at
+    }
+
+    SCHEMAS {
+        int id PK
+        int project_id FK
+        varchar name
+        text description
+        int current_version FK
+        uuid created_by FK
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
+    }
+
+    STORAGE_OBJECTS {
+        uuid id PK
+        varchar bucket
+        varchar object_key
+        bigint size
+        varchar checksum
+        varchar storage_class
+        json meta
+        datetime created_at
+    }
+
+    SCHEMA_VERSIONS {
+        int version_id PK
+        int schema_id FK
+        int version_number
+        varchar status
+        uuid object_id FK
+        json diff
+        text notes
+        uuid created_by FK
+        datetime created_at
+        datetime released_at
+        datetime deleted_at
+    }
+
+    NOTIFICATIONS {
+        int id PK
+        int organization_id FK
+        int project_id FK
+        int schema_id FK
+        int version_id FK
+        varchar event_type
+        json payload
+        datetime sent_at
+        boolean delivered
+    }
+
+    WEBHOOKS {
+        int id PK
+        int organization_id FK
+        int project_id FK
+        varchar url
+        varchar secret
+        varchar event_types
+        boolean is_active
+        datetime created_at
+    }
+
+    AUDIT_LOGS {
+        int id PK
+        uuid actor_id FK
+        int organization_id FK
+        int project_id FK
+        varchar target_table
+        varchar target_id
+        varchar action
+        json diff
+        datetime created_at
+    }
+
+
+    ORGANIZATIONS ||--o{ PROJECTS : has
+    ORGANIZATIONS ||--o{ MEMBERSHIPS : "members"
+    PROJECTS ||--o{ MEMBERSHIPS : "project_members"
+    PROJECTS ||--o{ SCHEMAS : "schemas"
+    USERS ||--o{ MEMBERSHIPS : "user_roles"
+
+    SCHEMAS ||--o{ SCHEMA_VERSIONS : "versions"
+    USERS ||--o{ SCHEMA_VERSIONS : "version_creator"
+    STORAGE_OBJECTS ||--o{ SCHEMA_VERSIONS : "stored_object"
+
+    SCHEMAS ||--o{ NOTIFICATIONS : "schema_events"
+    SCHEMA_VERSIONS ||--o{ NOTIFICATIONS : "version_events"
+
+    ORGANIZATIONS ||--o{ WEBHOOKS : "webhooks"
+    PROJECTS ||--o{ WEBHOOKS : "project_webhooks"
+
+    USERS ||--o{ AUDIT_LOGS : "actions"
+    ORGANIZATIONS ||--o{ AUDIT_LOGS : "org_scope"
+    PROJECTS ||--o{ AUDIT_LOGS : "project_scope"
