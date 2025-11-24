@@ -1,21 +1,17 @@
 from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlmodel import Field, Relationship, SQLModel
 
-from app.db.base import Base
+from .schema import Schema
 
 
-class SchemaVersion(Base):
-    __tablename__ = "schema_versions"
+class SchemaVersion(SQLModel, table=True):
+    version_id: Optional[int] = Field(default=None, primary_key=True)
+    schema_id: int = Field(foreign_key="schema.id")
+    version_number: int
+    file_path: str
+    diff_summary: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    version_id = Column(Integer, primary_key=True, index=True)
-
-    schema_id = Column(Integer, ForeignKey("schemas.id"), nullable=False)
-
-    version_number = Column(Integer, nullable=False)
-    file_path = Column(String, nullable=False)
-    diff_summary = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    schema = relationship("Schema", back_populates="versions")
+    schema: Optional[Schema] = Relationship(back_populates="versions")

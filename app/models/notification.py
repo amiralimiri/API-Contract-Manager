@@ -1,17 +1,14 @@
 from datetime import datetime
+from typing import Any, Optional
 
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String
+from sqlmodel import Field, SQLModel
 
-from app.db.base import Base
+from .schema import Schema
 
 
-class Notification(Base):
-    __tablename__ = "notifications"
-
-    id = Column(Integer, primary_key=True, index=True)
-
-    schema_id = Column(Integer, ForeignKey("schemas.id"), nullable=False)
-
-    event_type = Column(String, nullable=False)
-    payload = Column(JSON, nullable=False)
-    sent_at = Column(DateTime, default=datetime.utcnow)
+class Notification(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    schema_id: int = Field(foreign_key="schema.id")
+    event_type: str
+    payload: dict[str, Any]
+    sent_at: datetime = Field(default_factory=datetime.utcnow)

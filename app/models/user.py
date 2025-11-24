@@ -1,15 +1,12 @@
 from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import Column, DateTime, Integer, String
-
-from app.db.base import Base
+from sqlmodel import Field, SQLModel
 
 
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    email = Column(String, unique=True, nullable=False, index=True)
-    role = Column(String, nullable=False, default="user")
-    created_at = Column(DateTime, default=datetime.utcnow)
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    email: str = Field(index=True, unique=True)
+    role: str = "user"
+    created_at: datetime = Field(default_factory=datetime.utcnow)

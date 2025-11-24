@@ -1,12 +1,12 @@
 # app/db/base.py
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
+from sqlmodel import SQLModel
 
 from app.models.notification import Notification
 from app.models.schema import Schema
 from app.models.schema_version import SchemaVersion
 
-# این بخش بسیار مهم است: مدل‌ها باید import شوند
-# تا Alembic بتواند آن‌ها را پیدا کند.
+# تمام مدل‌های پروژه باید اینجا import شوند تا Alembic آنها را بشناسد
 from app.models.user import User
+
+# متادیتای اصلی برای Alembic
+metadata = SQLModel.metadata

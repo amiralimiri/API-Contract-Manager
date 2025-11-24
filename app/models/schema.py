@@ -1,27 +1,20 @@
 from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlmodel import Field, Relationship, SQLModel
 
-from app.db.base import Base
+from .schema_version import SchemaVersion
+from .user import User
 
 
-class Schema(Base):
-    __tablename__ = "schemas"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-
-    # اشاره به آخرین نسخه
-    current_version = Column(
-        Integer, ForeignKey("schema_versions.version_id"), nullable=True
+class Schema(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    current_version: Optional[int] = Field(
+        default=None, foreign_key="schemaversions.version_id"
     )
+    uploaded_by: int = Field(foreign_key="user.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    # چه کسی آپلود کرده
-    uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    # روابط
-    uploader = relationship("User")
-    versions = relationship("SchemaVersion", back_populates="schema")
+    uploader: Optional[User] = Relationship(back_populates="schemas")
+    versions: list["SchemaVersion"] = Relationship(back_populates="schema")

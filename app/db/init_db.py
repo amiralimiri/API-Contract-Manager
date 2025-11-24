@@ -1,13 +1,10 @@
 # app/db/init_db.py
-from sqlalchemy.orm import Session
+from sqlmodel import SQLModel
 
-from app.models.user import User
+from app.db.session import engine
 
 
-def init_db(db: Session):
-    # نمونه: اگر خواستیم کاربر پیش‌فرض بسازیم
-    existing = db.query(User).first()
-    if not existing:
-        user = User(email="admin@example.com")
-        db.add(user)
-        db.commit()
+def init_db():
+    from app.db.base import metadata
+
+    SQLModel.metadata.create_all(engine)
