@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     SQLALCHEMY_DATABASE_URI: str = "sqlite:///./default.db"
     APP_NAME: str = "API Contract Manager"
+    UPLOAD_DIR: str = "/data/uploads"
     ENV: str = "development"
     DEBUG: bool = True
 

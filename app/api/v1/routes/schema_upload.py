@@ -1,8 +1,21 @@
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-router = APIRouter(prefix="/schema", tags=["Schema"])
+from app.db.session import get_session
+from app.services.schema_service import create_schema
+
+router = APIRouter()
 
 
-@router.post("/upload")
-async def upload_schema(file: UploadFile):
-    return {"filename": file.filename}
+@router.post("/schemas/upload")
+async def upload_schema(
+    name: str,
+    schema_file: UploadFile = File(...),
+    session: AsyncSession = Depends(get_session),
+):
+    content = await schema_file.read()
+    try:
+        sc = await create_schema(session, name, content, uploaded_by=1)
+        return {"status": "ok", "schema_id": sc.id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
