@@ -1,4 +1,3 @@
-# app/db/session.py
 from sqlmodel import Session, create_engine
 
 from app.core.config import settings
