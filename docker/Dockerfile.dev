@@ -1,0 +1,18 @@
+# docker/Dockerfile.dev
+FROM python:3.12-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements file
+COPY requirements.txt /app/
+
+# نصب dependencies
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# Copy the rest of the code
+COPY . /app
+
+# دستور پیش‌فرض (می‌توان در docker-compose override کرد)
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
