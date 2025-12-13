@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api.v1.routes.schema_upload import router as schema_router
+from app.api.v1.routes import router as v1_router
 from app.core.config import settings
 
 
@@ -11,7 +11,7 @@ def create_app() -> FastAPI:
     async def health_check():
         return {"status": "ok", "env": settings.ENV}
 
-    app.include_router(schema_router)
+    app.include_router(v1_router)
 
     return app
 
