@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
-
-from .schema_version import SchemaVersion
 
 
 class Schema(SQLModel, table=True):
@@ -15,4 +15,5 @@ class Schema(SQLModel, table=True):
     uploaded_by: Optional[int] = Field(default=None, foreign_key="user.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    versions: list[SchemaVersion] = Relationship(back_populates="schema")
+    versions: List["SchemaVersion"] = Relationship(back_populates="schema")
+    uploader: "User | None" = Relationship(back_populates="schemas")

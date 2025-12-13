@@ -1,44 +1,40 @@
 from jsonschema import ValidationError, validate
-from sqlalchemy.future import select
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from app.models.schema_version import SchemaVersion
+from app.utils.file_handler import load_schema_body_from_version
 
 
 async def run_contract_test(
-    session, schema_id: int, sample_request: dict
+    session: AsyncSession, schema_id: int, sample_request: dict
 ) -> dict | None:
-    """
-    آخرین نسخه‌ی اسکیما را بارگذاری می‌کند و sample_request را با آن اعتبارسنجی می‌کند.
-    در صورت معتبر بودن، نتیجهٔ موفقیت‌آمیز برمی‌گرداند.
-    در صورت خطا، جزئیات خطا برمی‌گرداند.
-    """
-
-    # گرفتن آخرین نسخه از اسکیما
-    from app.models.schema_version import SchemaVersion
+    """Validate a sample request body against the latest schema version."""
 
     q = await session.exec(
         select(SchemaVersion)
         .where(SchemaVersion.schema_id == schema_id)
-        .order_by(SchemaVersion.created_at.desc())  # اصلاح created_a
+        .order_by(SchemaVersion.version_number.desc())
     )
     schema_version = q.first()
 
     if not schema_version:
-        return {"success": False, "error": "Schema not found", "schema_id": schema_id}
+        return None
 
-    schema_body = schema_version.schema_body
+    schema_body = await load_schema_body_from_version(schema_version)
     if not isinstance(schema_body, dict):
         return {
             "success": False,
-            "error": "Schema body is invalid or not in dict form",
+            "error": "Schema body is missing or invalid",
             "schema_id": schema_id,
         }
 
-    # اعتبارسنجی JSON
     try:
         validate(instance=sample_request, schema=schema_body)
         return {
             "success": True,
             "message": "Request is valid",
-            "schema_version": schema_version.version,
+            "schema_version": schema_version.version_number,
         }
 
     except ValidationError as e:
@@ -47,5 +43,5 @@ async def run_contract_test(
             "error": "Validation error",
             "details": e.message,
             "path": list(e.absolute_path),
-            "schema_version": schema_version.version,
+            "schema_version": schema_version.version_number,
         }

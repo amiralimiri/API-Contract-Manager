@@ -1,7 +1,9 @@
-from datetime import datetime
-from typing import Optional
+from __future__ import annotations
 
-from sqlmodel import Field, SQLModel
+from datetime import datetime
+from typing import List, Optional
+
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class User(SQLModel, table=True):
@@ -10,3 +12,5 @@ class User(SQLModel, table=True):
     email: str
     role: str = "user"
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    schemas: List["Schema"] = Relationship(back_populates="uploader")
